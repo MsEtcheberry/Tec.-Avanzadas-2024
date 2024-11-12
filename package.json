@@ -18,10 +18,13 @@
   },
   "homepage": "https://github.com/MsEtcheberry/Tec.-Avanzadas-2024#readme",
   "dependencies": {
+    "axios": "^1.7.7",
+    "chai": "^5.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
+    "mocha": "^10.8.2",
     "mongodb": "^6.10.0",
     "mongoose": "^8.7.3"
   }
