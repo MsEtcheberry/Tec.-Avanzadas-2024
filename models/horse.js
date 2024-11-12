@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 const horseSchema = new Schema({
     displayName: {
         type: String,
@@ -9,13 +9,13 @@ const horseSchema = new Schema({
         type: Number,
         required: true
     },
-}, { timestamps: true }).set('toJSON', {
+}, { timestamps: true }).set("toJSON", {
     transform: (document, object) => {
-        object.id = document.id;
-        delete object._id;
-        delete object.password;
+        object.id = document.id
+        delete object._id
+        delete object.password
     }
 })
 
-const Horse = mongoose.model('horses', horseSchema);
-module.exports = Horse;
+const Horse = mongoose.model("horses", horseSchema)
+module.exports = Horse

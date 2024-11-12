@@ -106,20 +106,21 @@ app.get("/horses", async (req, res) => {
     }
 })
 
-app.post("/horses", middleware.verify, async (req, res) => {
+app.post("/horses", middleware.verify, middleware.isAdmin, async (req, res) => {
     let displayName = req.body.displayName;
     let winningRate = req.body.winningRate;
 
 
     try {
         const result = await HorseController.addHorse(displayName, winningRate);
-        if (result) {
+        if (result.success) {
             res.status(201).send({ message: "¡El caballo fue creado correctamente!" });
         } else {
-            res.status(409).send({ message: "El caballo no pudo ser creado. Aseguerese de que no exista uno con el mismo nombre o de no tener datos faltantes." });
+            res.status(409).send({ message: result.message });
         }
     } catch (err) {
-        res.status(500).send({ message: "Error al crear el caballo. Intente luego nuevamente" });
+        res.status(500).send({ message: "Error al crear el caballo. Intente luego nuevamente" })
+        console.log(err)
     }
 
 })
@@ -164,21 +165,33 @@ app.get("/races", async (req, res) => {
     }
 })
 
+app.get("/races/:id/bets", async (req, res) => {
+    let raceId = req.params.id
+    let limit = req.query.limit;
+    let offset = req.query.offset;
+    try {
+        const results = await BetController.getBetsForRace(raceId, limit, offset);
+        res.status(200).json(results);
+    } catch (err) {
+        res.status(500).send({ message: "Hubo un error al intentar recuperar las apuestas. Intente luego." });
+    }
+})
+
 app.put("/races/:id/horses", middleware.verify, async (req, res) => {
     let raceId = req.params.id
     let horseId = req.body.horseId
 
     try {
-        const updatedRace = await RaceController.addHorseToRace(
+        const result = await RaceController.addHorseToRace(
             raceId,
             horseId
         )
 
-        if (!updatedRace) {
-            return res.status(404).send({ message: "No se encontró la carrera" })
+        if (result.success) {
+            return res.status(200).send({ data: result.data })
+        } else {
+            return res.status(400).send({ message: result.message })
         }
-
-        res.status(200).send(updatedRace)
     } catch (error) {
         console.error("Hubo un error al intentar agregar el caballo:", error)
         res.status(500).send({ message: "Hubo un error al intentar agregar el caballo. Intente luego." })
@@ -197,17 +210,17 @@ app.post("/races/:id/finish", middleware.verify, middleware.isAdmin, async (req,
     }
 });
 
-app.post("/races", async (req, res) => {
+app.post("/races", middleware.verify, middleware.isAdmin, async (req, res) => {
     let raceName = req.body.raceName;
     let raceDateTime = req.body.raceDateTime;
 
 
     try {
         const result = await RaceController.addRace(raceDateTime, raceName);
-        if (result) {
-            res.status(201).send({ message: "¡La carrera fue creada correctamente!" });
+        if (result.success) {
+            res.status(201).send({ data: result.data });
         } else {
-            res.status(409).send({ message: "No pudo crearse la carrera debido a datos faltantes" });
+            res.status(409).send({ message: result.message });
         }
     } catch (err) {
         res.status(500).send({ message: "Error al crear carrera. Intente luego" });
@@ -222,14 +235,21 @@ app.post("/bets", middleware.verify, async (req, res) => {
     let userId = req.body.userId
     let raceId = req.body.raceId
     let horseId = req.body.horseId
-
-
     try {
+        const race = await RaceController.getRace(raceId)
+        if (!race) {
+            return res.status(404).send({ message: "No se encontró la carrera." })
+        }
 
-        const result = await BetController.createBet(amount, userId, horseId, raceId);
+        const result = await BetController.createBet(amount, userId, horseId, race);
 
         if (result.success) {
-            res.status(201).send({ message: "¡La apuesta fue registrada con éxito! ¡Suerte! 🍀" });
+            const amountUpdateResult = await UserController.updateBalance(user, -amount)
+            if (amountUpdateResult.success) {
+                res.status(201).send({ message: "¡La apuesta fue registrada con éxito! ¡Suerte! 🍀" })
+            } else {
+                res.status(400).send({ message: amountUpdateResult.message })
+            }
         } else {
             res.status(409).send({ message: result.message });
         }
@@ -238,5 +258,17 @@ app.post("/bets", middleware.verify, async (req, res) => {
         res.status(500).send({ message: "Error interno del servidor. Intente luego nuevamente" });
     }
 
+})
+
+app.get("/users", async (req, res) => {
+
+    let limit = req.query.limit;
+    let offset = req.query.offset;
+    try {
+        const results = await UserController.getAllUsers(limit, offset);
+        res.status(200).json(results);
+    } catch (err) {
+        res.status(500).send(err);
+    }
 })
 
