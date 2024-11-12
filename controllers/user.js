@@ -1,4 +1,4 @@
-require("mongoose")
+const mongoose = require("mongoose")
 
 const User = require("../models/user")
 
@@ -37,6 +37,9 @@ const getAllUsers = async (limit, offset) => {
 }
 
 const getUser = async (id) => {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return false
+    }
     const user = await User.findById(id)
     return user
 }
@@ -51,22 +54,22 @@ const deleteUser = async (id) => {
     return user
 }
 
-const updateBalance = async (id, amount) => {
-    console.log(amount)
+const updateBalance = async (userId, amount) => {
+    console.log("usuario: " + userId + "  --  " + amount)
     const amountNumber = parseFloat(amount)
     if (isNaN(amountNumber)) {
-        throw new Error("El monto ingresado debe ser un número")
+        return { success: false, message: "Error, el monto ingresado no es un número" }
     }
-
-    const user = await User.findById(id)
+    const user = await getUser(userId)
     if (!user) {
-        throw new Error("No se encontró al usuario registrado en la apuesta")
+        return { success: false, message: "No se encontró al usuario." }
     }
+    console.log("Saldo antes: " + user.currentBalance)
     user.currentBalance = parseFloat(user.currentBalance)
     user.currentBalance += amountNumber
-
-    await user.save()
-    return user
+    console.log("Saldo ahora: " + user.currentBalance)
+    await User.findByIdAndUpdate(user._id, user, { new: true })
+    return { success: true, message: "El saldo fue actualizado con éxito" }
 }
 
 module.exports = { addUser, getAllUsers, getUser, editUser, deleteUser, updateBalance }

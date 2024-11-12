@@ -6,10 +6,16 @@ const Horse = require("../models/horse");
 const addHorse = async (displayName, winningRate) => {
     console.log(displayName, winningRate)
     if (!displayName || !winningRate) {
-        return false;
+        return { success: false, message: "No pudo crearse el caballo debido a que tiene campos incompletos" }
     }
 
-    let nameTaken = await Horse.findOne({ displayName: displayName });
+    if (isNaN(winningRate) || winningRate <= 0) {
+
+        return { success: false, message: "No pudo crearse el caballo debido a que el winning rate no es válido" }
+    }
+
+    let nameTaken = await Horse.findOne({ displayName: displayName })
+    console.log("holaaa " + nameTaken)
     if (!nameTaken) {
         const horse = new Horse(
             {
@@ -18,10 +24,12 @@ const addHorse = async (displayName, winningRate) => {
             }
         )
         let createdHorse = await horse.save();
-        console.log("horse: " + createdHorse)
-        return createdHorse
+
+        return {
+            success: true, createdHorse
+        }
     } else {
-        return false
+        return { success: false, message: "Ya existe un caballo con ese nombre" }
     }
 }
 
