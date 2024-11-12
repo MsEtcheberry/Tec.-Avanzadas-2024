@@ -1,4 +1,4 @@
-require("mongoose")
+const mongoose = require("mongoose")
 const Horse = require("../models/horse");
 
 
@@ -34,6 +34,9 @@ const addHorse = async (displayName, winningRate) => {
 }
 
 const getHorse = async (id) => {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return false
+    }
     const horse = await Horse.findById(id);
     return horse
 }

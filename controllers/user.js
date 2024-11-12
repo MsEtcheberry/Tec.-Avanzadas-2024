@@ -55,7 +55,7 @@ const deleteUser = async (id) => {
 }
 
 const updateBalance = async (userId, amount) => {
-    console.log("usuario: " + userId + "  --  " + amount)
+    console.log("usuario: " + userId + "  --  Monto a agregar/restar: " + amount)
     const amountNumber = parseFloat(amount)
     if (isNaN(amountNumber)) {
         return { success: false, message: "Error, el monto ingresado no es un número" }

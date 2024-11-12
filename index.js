@@ -182,6 +182,10 @@ app.put("/races/:id/horses", middleware.verify, async (req, res) => {
     let horseId = req.body.horseId
 
     try {
+        const horse = await HorseController.getHorse(horseId)
+        if (!horse) {
+            return res.status(404).send({ message: "No se encontró el caballo seleccionado" })
+        }
         const result = await RaceController.addHorseToRace(
             raceId,
             horseId
@@ -241,14 +245,19 @@ app.post("/bets", middleware.verify, async (req, res) => {
             return res.status(404).send({ message: "No se encontró la carrera." })
         }
 
+        const user = await UserController.getUser(userId)
+        if (!user) {
+            return res.status(404).send({ message: "No se encontró al usuario." })
+        }
+
         const result = await BetController.createBet(amount, userId, horseId, race);
 
         if (result.success) {
             const amountUpdateResult = await UserController.updateBalance(userId, -amount)
-            if (amountUpdateResult.success) {
-                res.status(201).send({ message: "¡La apuesta fue registrada con éxito! ¡Suerte! 🍀" })
+            if (!amountUpdateResult.success) {
+                return res.status(400).send({ message: amountUpdateResult.message })
             } else {
-                res.status(400).send({ message: amountUpdateResult.message })
+                res.status(201).send({ message: "¡La apuesta fue registrada con éxito! ¡Suerte! 🍀" })
             }
         } else {
             res.status(409).send({ message: result.message });

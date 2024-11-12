@@ -105,12 +105,13 @@ const finishRace = async (raceId) => {
 
     try {
         const race = await Race.findById(raceId).populate("horses.horseId")
+
         if (!race) {
-            return { success: false, message: "No se encontró la carrera" }
+            return { success: false, message: "No se encontró la carrera " }
         }
-        /* if (race.status == "finished") {
-             return { success: false, message: "La carrera ya fue finalizada previamente" }
-         }*/
+        if (race.status == "finished") {
+            return { success: false, message: "La carrera ya fue finalizada previamente 🏇🏾" }
+        }
         // Asignar posiciones aleatorias
         const positions = Array.from({ length: race.horses.length }, (_, i) => i + 1)
         for (let horse of race.horses) {
