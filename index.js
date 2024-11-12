@@ -244,7 +244,7 @@ app.post("/bets", middleware.verify, async (req, res) => {
         const result = await BetController.createBet(amount, userId, horseId, race);
 
         if (result.success) {
-            const amountUpdateResult = await UserController.updateBalance(user, -amount)
+            const amountUpdateResult = await UserController.updateBalance(userId, -amount)
             if (amountUpdateResult.success) {
                 res.status(201).send({ message: "¡La apuesta fue registrada con éxito! ¡Suerte! 🍀" })
             } else {
