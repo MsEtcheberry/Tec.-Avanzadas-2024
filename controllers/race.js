@@ -52,7 +52,8 @@ const getAllRaces = async (limit, offset) => {
 const getNextRaces = async (limit, offset) => {
     const currentDateTime = Date()
     const races = await Race.find({
-        raceDateTime: { $gt: currentDateTime }
+        raceDateTime: { $gt: currentDateTime },
+        status: { $ne: "finished" }
     }).limit(limit).skip(offset).lean()
 
 
