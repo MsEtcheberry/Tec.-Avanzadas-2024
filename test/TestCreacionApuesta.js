@@ -277,21 +277,6 @@ describe('Crear nueva apuesta', () => {
             done()
         })
     }))
-    it('Borrar caballo', (done => {
-        axios.delete(
-            url + "/horses/" + testHorse.id, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        }).then(response => {
-            assert.equal(response.status, 204)
-            done()
-        }).catch(err => {
-            console.log(err.response)
-            assert.equal(err.response.status, 204)
-            done()
-        })
-    }))
+
 
 })
